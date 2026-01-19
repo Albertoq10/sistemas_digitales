@@ -1,17 +1,50 @@
 /*
  * ldr_adc.c
  *
- *  Created on: Jan 16, 2026
- *      Author: alber
+ *  Created on: Jan 10, 2026
+ *      Authors: Alberto and Marcos
  */
-
 
 
 #include "ldr_adc.h"
 
 ADC_HandleTypeDef hadc1;
 
+static uint16_t ldr_filtro = 0;     // valor filtrado, para no generar brincos no esperados
+static uint8_t  ldr_inicial = 0;
 
+
+
+//lectura luz sin bloqueos
+uint8_t leer_nivel_luz(ADC_HandleTypeDef *hadc1)
+{
+  //volver a arrancar adc
+  HAL_ADC_Start(hadc1);
+  if (HAL_ADC_PollForConversion(hadc1, 5) != HAL_OK) {
+    HAL_ADC_Stop(hadc1);
+    return 0; //
+  }
+
+  uint16_t raw = (uint16_t)HAL_ADC_GetValue(hadc1);
+  HAL_ADC_Stop(hadc1);//para no afectar wifi
+
+
+  uint16_t valor_ldr = (uint16_t)(4095u - raw);//mas luz, sube el valor,
+
+  // filtro EMA (exponential moving avg), filtro para evitar delays
+  if (!ldr_inicial) {
+    ldr_filtro = valor_ldr;
+    ldr_inicial = 1;
+  } else {
+    ldr_filtro = (uint16_t)((ldr_filtro * 7u + valor_ldr) / 8u);
+  }
+
+  // porcentaje
+  return (uint8_t)((ldr_filtro * 100u) / 4095u);
+}
+
+
+//configuracion de ejemplo basico, esto lo genera el cubemx al momento de configurar los pines
 //adc
 void MX_ADC1_Init(void)
 {

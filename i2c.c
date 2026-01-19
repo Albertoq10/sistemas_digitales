@@ -1,16 +1,17 @@
 /*
  * i2c.c
  *
- *  Created on: Jan 13, 2026
- *      Author: alber
+ *  Created on: Jan 10, 2026
+ *      Authors: Alberto and Marcos
  */
-
 
 #include "i2c.h"
 
 
 I2C_HandleTypeDef hi2c1;
 
+//configuracion de ejemplo basico, esto lo genera el cubemx al momento de configurar los pines
+//i2c
 void MX_I2C1_Init(void)
 {
 
